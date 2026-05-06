@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Hint, Player, Question, Room, RoomEvent } from './types';
+import type { CurseThrow, Hint, Player, Question, Room, RoomEvent } from './types';
 
 type State = {
   code: string | null;
@@ -10,6 +10,7 @@ type State = {
   events: RoomEvent[];
   questions: Question[];
   hints: Hint[];
+  throws: CurseThrow[];
 };
 
 type Actions = {
@@ -20,6 +21,7 @@ type Actions = {
   setEvents: (events: RoomEvent[]) => void;
   setQuestions: (questions: Question[]) => void;
   setHints: (hints: Hint[]) => void;
+  setThrows: (throws: CurseThrow[]) => void;
   reset: () => void;
 };
 
@@ -32,6 +34,7 @@ const initial: State = {
   events: [],
   questions: [],
   hints: [],
+  throws: [],
 };
 
 export const useRoomStore = create<State & Actions>((set) => ({
@@ -43,6 +46,7 @@ export const useRoomStore = create<State & Actions>((set) => ({
   setEvents: (events) => set({ events }),
   setQuestions: (questions) => set({ questions }),
   setHints: (hints) => set({ hints }),
+  setThrows: (throws) => set({ throws }),
   reset: () => set({ ...initial }),
 }));
 

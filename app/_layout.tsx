@@ -47,6 +47,16 @@ export default function RootLayout() {
             name="hideseek/summary/[code]"
             options={{ title: 'Round summary', headerBackVisible: false }}
           />
+          <Stack.Screen name="race/index" options={{ title: 'Train Rush' }} />
+          <Stack.Screen name="race/[code]" options={{ title: 'Lobby' }} />
+          <Stack.Screen
+            name="race/play/[code]"
+            options={{ title: 'Train Rush', headerBackTitle: 'Quit' }}
+          />
+          <Stack.Screen
+            name="race/summary/[code]"
+            options={{ title: 'Round summary', headerBackVisible: false }}
+          />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         </Stack>
       </SafeAreaProvider>

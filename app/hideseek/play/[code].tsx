@@ -360,19 +360,20 @@ function HintShopModal({
   code: string;
 }) {
   const me = useRoomStore(selectMe);
-  const hider = useRoomStore(selectHider);
   const hints = useRoomStore((s) => s.hints);
+  const room = useRoomStore((s) => s.room);
+  const hsRoom = room?.mode === 'hide-seek' ? room : null;
   const [busy, setBusy] = useState(false);
   const [pickRefStation, setPickRefStation] = useState(false);
 
   const buy = async (entryIdx: number, refStationId?: string) => {
-    if (!me || !hider?.lastStationId) return;
+    if (!me || !hsRoom?.config.hiderStationId) return;
     const entry = HINT_CATALOG[entryIdx];
     if (!entry) return;
     if (me.coins < entry.costCoins) return;
     setBusy(true);
     try {
-      const hiderStation = getStation(hider.lastStationId);
+      const hiderStation = getStation(hsRoom.config.hiderStationId);
       if (!hiderStation) return;
       const { result } = resolveHint(entry.type, hiderStation, refStationId);
       await Promise.all([

@@ -6,7 +6,13 @@ import { useRoomStore, selectMe } from '@/multiplayer/store';
 import { useRoomSync } from '@/multiplayer/hooks/useRoomSync';
 import { getStation } from '@/transit/graph';
 import { colors, radius, spacing } from '@/ui/theme';
-import { leaveRoom } from '@/firebase/rooms';
+import {
+  leaveRoom,
+  refillCoins,
+  resetRound,
+  setHider,
+  setPlayerRole,
+} from '@/firebase/rooms';
 
 export default function HideSeekSummary() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -31,8 +37,38 @@ export default function HideSeekSummary() {
     router.replace('/');
   };
 
+  const isHost = me?.uid && room?.hostUid === me.uid;
+
+  useEffect(() => {
+    if (code && room?.state === 'lobby') {
+      router.replace(`/hideseek/${code}`);
+    }
+  }, [code, room?.state, router]);
+
   if (room?.mode !== 'hide-seek') return null;
   const found = events.find((e) => e.type === 'hider-found');
+
+  const handlePlayAgain = async () => {
+    if (!code || !room) return;
+    // Rotate hider: finder becomes new hider; if hider won, keep them.
+    const finderUid =
+      found && found.type === 'hider-found' ? found.finderUid : room.hiderUid;
+    if (finderUid) {
+      await Promise.all([
+        setHider(code, finderUid),
+        ...players.map((p) =>
+          setPlayerRole(code, p.uid, p.uid === finderUid ? 'hider' : 'seeker'),
+        ),
+      ]);
+    }
+    await refillCoins(
+      code,
+      players.map((p) => p.uid),
+      room.config.startingCoins,
+    );
+    await resetRound(code);
+    router.replace(`/hideseek/${code}`);
+  };
   const hiderStationName = room.config.hiderStationId
     ? getStation(room.config.hiderStationId)?.name
     : '—';
@@ -87,7 +123,14 @@ export default function HideSeekSummary() {
         )}
       </View>
 
-      <Button title="Back to home" onPress={handleLeave} />
+      {isHost ? (
+        <Button title="Play again (rotate hider)" onPress={handlePlayAgain} />
+      ) : (
+        <Text style={styles.muted}>
+          Waiting for the host to start the next round, or leave to go home.
+        </Text>
+      )}
+      <Button title="Back to home" variant="secondary" onPress={handleLeave} />
     </ScrollView>
   );
 }

@@ -14,7 +14,9 @@ import {
 import { getDb } from './config';
 import {
   DEFAULT_HIDE_SEEK_CONFIG,
+  DEFAULT_RACE_CONFIG,
   DEFAULT_TAG_CONFIG,
+  type CurseThrow,
   type HideSeekConfig,
   type Hint,
   type Player,
@@ -23,8 +25,8 @@ import {
   type Question,
   type Room,
   type RoomEvent,
-  type RoomMode,
   type RoomState,
+  type Team,
 } from '@/multiplayer/types';
 
 const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -47,10 +49,12 @@ const questionsCol = (code: string) => collection(getDb(), 'rooms', code, 'quest
 const questionDoc = (code: string, id: string) =>
   doc(getDb(), 'rooms', code, 'questions', id);
 const hintsCol = (code: string) => collection(getDb(), 'rooms', code, 'hints');
+const throwsCol = (code: string) => collection(getDb(), 'rooms', code, 'throws');
 
 type CreateRoomOpts =
   | { mode: 'tag' }
-  | { mode: 'hide-seek'; zone?: HideSeekConfig['zone'] };
+  | { mode: 'hide-seek'; zone?: HideSeekConfig['zone'] }
+  | { mode: 'race' };
 
 export async function createRoom(
   hostUid: string,
@@ -80,18 +84,30 @@ export async function createRoom(
               config: DEFAULT_TAG_CONFIG,
               runnerUid: hostUid,
             }
-          : {
+          : opts.mode === 'hide-seek'
+          ? {
               ...base,
               mode: 'hide-seek',
               config: { ...DEFAULT_HIDE_SEEK_CONFIG, zone: opts.zone ?? 'all-mmr' },
               hiderUid: hostUid,
+            }
+          : {
+              ...base,
+              mode: 'race',
+              config: DEFAULT_RACE_CONFIG,
             };
       tx.set(ref, room);
       return true;
     });
     if (created) {
-      const role: PlayerRole = opts.mode === 'tag' ? 'runner' : 'hider';
-      const startingCoins = opts.mode === 'hide-seek' ? DEFAULT_HIDE_SEEK_CONFIG.startingCoins : 0;
+      const role: PlayerRole =
+        opts.mode === 'tag' ? 'runner' : opts.mode === 'hide-seek' ? 'hider' : 'racer';
+      const startingCoins =
+        opts.mode === 'hide-seek'
+          ? DEFAULT_HIDE_SEEK_CONFIG.startingCoins
+          : opts.mode === 'race'
+          ? DEFAULT_RACE_CONFIG.startingCoins
+          : 0;
       await joinRoom(code, hostUid, hostName, role, startingCoins);
       return code;
     }
@@ -110,8 +126,17 @@ export async function joinRoom(
   if (!room.exists()) throw new Error(`Room ${code} not found.`);
   const data = room.data() as Room;
   const role: PlayerRole =
-    defaultRole !== 'chaser' ? defaultRole : data.mode === 'hide-seek' ? 'seeker' : 'chaser';
-  const coins = data.mode === 'hide-seek' ? data.config.startingCoins : startingCoins;
+    defaultRole !== 'chaser'
+      ? defaultRole
+      : data.mode === 'hide-seek'
+      ? 'seeker'
+      : data.mode === 'race'
+      ? 'racer'
+      : 'chaser';
+  const coins =
+    data.mode === 'hide-seek' || data.mode === 'race'
+      ? data.config.startingCoins
+      : startingCoins;
   const playerRef = playerDoc(code, uid);
   const existing = await getDoc(playerRef);
   if (existing.exists()) {
@@ -151,6 +176,44 @@ export async function setRunner(code: string, uid: string): Promise<void> {
   await updateDoc(roomDoc(code), { runnerUid: uid });
 }
 
+export async function setHider(code: string, uid: string): Promise<void> {
+  await updateDoc(roomDoc(code), {
+    hiderUid: uid,
+    'config.hiderStationId': null,
+    'config.hiderLocked': false,
+  });
+}
+
+/**
+ * Reset a finished room back to the lobby for another round. Mode-specific
+ * transient state (hider lock-in, runner assignment, winner) is cleared. The
+ * caller is expected to also reset coin balances if desired.
+ */
+export async function resetRound(code: string): Promise<void> {
+  const snap = await getDoc(roomDoc(code));
+  if (!snap.exists()) return;
+  const data = snap.data() as Room;
+  const patch: Record<string, unknown> = {
+    state: 'lobby',
+    startedAt: null,
+    endedAt: null,
+    winner: null,
+  };
+  if (data.mode === 'hide-seek') {
+    patch['config.hiderStationId'] = null;
+    patch['config.hiderLocked'] = false;
+  }
+  await updateDoc(roomDoc(code), patch);
+}
+
+export async function refillCoins(
+  code: string,
+  uids: string[],
+  coins: number,
+): Promise<void> {
+  await Promise.all(uids.map((uid) => setPlayerCoins(code, uid, coins)));
+}
+
 export async function setPlayerRole(
   code: string,
   uid: string,
@@ -165,6 +228,25 @@ export async function setPlayerCoins(
   coins: number,
 ): Promise<void> {
   await updateDoc(playerDoc(code, uid), { coins });
+}
+
+export async function setPlayerTeam(
+  code: string,
+  uid: string,
+  team: Team,
+): Promise<void> {
+  await updateDoc(playerDoc(code, uid), { team });
+}
+
+export async function setRaceTarget(
+  code: string,
+  fromStationId: string,
+  toStationId: string,
+): Promise<void> {
+  await updateDoc(roomDoc(code), {
+    'config.fromStationId': fromStationId,
+    'config.toStationId': toStationId,
+  });
 }
 
 export async function setHiderStation(code: string, stationId: string): Promise<void> {
@@ -234,6 +316,13 @@ export async function logHint(code: string, hint: Omit<Hint, 'id'>): Promise<voi
   await addDoc(hintsCol(code), hint);
 }
 
+export async function throwCurse(
+  code: string,
+  curse: Omit<CurseThrow, 'id'>,
+): Promise<void> {
+  await addDoc(throwsCol(code), curse);
+}
+
 export function subscribeToRoom(
   code: string,
   onUpdate: (room: Room | null) => void,
@@ -278,5 +367,16 @@ export function subscribeToHints(
 ): () => void {
   return onSnapshot(query(hintsCol(code), orderBy('askedAt', 'asc')), (snap) => {
     onUpdate(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Hint, 'id'>) })));
+  });
+}
+
+export function subscribeToThrows(
+  code: string,
+  onUpdate: (throws: CurseThrow[]) => void,
+): () => void {
+  return onSnapshot(query(throwsCol(code), orderBy('thrownAt', 'asc')), (snap) => {
+    onUpdate(
+      snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<CurseThrow, 'id'>) })),
+    );
   });
 }

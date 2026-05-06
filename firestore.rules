@@ -1,31 +1,77 @@
 rules_version = '2';
 
-// Minimal rules for the Tag MVP. Anyone signed in (anonymous auth is fine)
-// can create a room. Within a room, anyone signed in can read; writes to a
-// player document are restricted to that player's own uid; the room document
-// itself can only be mutated by the host. Events can be appended by any
-// signed-in user inside the room.
-//
-// These rules are intentionally permissive enough for friend-lobby play.
-// Tighten before opening to public matchmaking.
+// Per-mode rules for friend-lobby play. Reads are open to any signed-in user
+// who knows the room code; writes are scoped:
+//   - rooms/{code}: any in-room player can update (host, hider, racers).
+//     Created only by a user whose uid matches the room's hostUid.
+//   - rooms/{code}/players/{uid}: that player writes themselves; the host
+//     can also update player docs (used to assign roles / teams).
+//   - rooms/{code}/questions/{q}: created by the asker (uid in body must
+//     equal request.auth.uid). Updated only by the room's current hider
+//     (to write the answer).
+//   - rooms/{code}/hints/{h}: created by the asker; immutable after.
+//   - rooms/{code}/events/{e}: created by any signed-in user (so cheat-flag
+//     events from other players can be logged); immutable.
+//   - rooms/{code}/throws/{t}: created by any in-room player; immutable.
 service cloud.firestore {
-  match /databases/{database}/documents {
+  match /databases/{db}/documents {
+    function room(code) {
+      return get(/databases/$(db)/documents/rooms/$(code)).data;
+    }
+    function isPlayer(code) {
+      return request.auth != null
+        && exists(/databases/$(db)/documents/rooms/$(code)/players/$(request.auth.uid));
+    }
+    function isHost(code) {
+      return request.auth != null && room(code).hostUid == request.auth.uid;
+    }
+    function isHider(code) {
+      return request.auth != null && room(code).hiderUid == request.auth.uid;
+    }
+
     match /rooms/{code} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
         && request.resource.data.hostUid == request.auth.uid;
-      allow update, delete: if request.auth != null
-        && resource.data.hostUid == request.auth.uid;
+      allow update: if request.auth != null && (
+        resource.data.hostUid == request.auth.uid
+        || isPlayer(code)
+      );
+      allow delete: if isHost(code);
 
       match /players/{uid} {
         allow read: if request.auth != null;
-        allow create, update: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow update: if request.auth != null
+          && (request.auth.uid == uid || isHost(code));
         allow delete: if false;
       }
 
-      match /events/{event} {
+      match /questions/{q} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.askerUid == request.auth.uid;
+        allow update: if isHider(code);
+        allow delete: if false;
+      }
+
+      match /hints/{h} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.askerUid == request.auth.uid;
+        allow update, delete: if false;
+      }
+
+      match /events/{e} {
         allow read: if request.auth != null;
         allow create: if request.auth != null;
+        allow update, delete: if false;
+      }
+
+      match /throws/{t} {
+        allow read: if request.auth != null;
+        allow create: if isPlayer(code)
+          && request.resource.data.fromUid == request.auth.uid;
         allow update, delete: if false;
       }
     }

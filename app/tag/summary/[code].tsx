@@ -2,11 +2,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/ui/Button';
-import { useRoomStore } from '@/multiplayer/store';
+import { selectMe, useRoomStore } from '@/multiplayer/store';
 import { useRoomSync } from '@/multiplayer/hooks/useRoomSync';
 import { getStation } from '@/transit/graph';
 import { colors, radius, spacing } from '@/ui/theme';
-import { leaveRoom } from '@/firebase/rooms';
+import { leaveRoom, resetRound } from '@/firebase/rooms';
 
 export default function TagSummary() {
   const { code } = useLocalSearchParams<{ code: string }>();
@@ -15,7 +15,8 @@ export default function TagSummary() {
   const room = useRoomStore((s) => s.room);
   const players = useRoomStore((s) => s.players);
   const events = useRoomStore((s) => s.events);
-  const me = useRoomStore((s) => s.uid);
+  const me = useRoomStore(selectMe);
+  const isHost = me?.uid && room?.hostUid === me.uid;
 
   useEffect(() => {
     if (code) setRoomCode(code);
@@ -23,10 +24,22 @@ export default function TagSummary() {
 
   useRoomSync();
 
+  useEffect(() => {
+    if (code && room?.state === 'lobby') {
+      router.replace(`/tag/${code}`);
+    }
+  }, [code, room?.state, router]);
+
   const handleLeave = async () => {
-    if (code && me) await leaveRoom(code, me);
+    if (code && me?.uid) await leaveRoom(code, me.uid);
     setRoomCode(null);
     router.replace('/');
+  };
+
+  const handlePlayAgain = async () => {
+    if (!code) return;
+    await resetRound(code);
+    router.replace(`/tag/${code}`);
   };
 
   const captures = events.filter((e) => e.type === 'capture');
@@ -67,7 +80,14 @@ export default function TagSummary() {
         )}
       </View>
 
-      <Button title="Back to home" onPress={handleLeave} />
+      {isHost ? (
+        <Button title="Play again (same room)" onPress={handlePlayAgain} />
+      ) : (
+        <Text style={styles.muted}>
+          Waiting for the host to start the next round, or leave to go home.
+        </Text>
+      )}
+      <Button title="Back to home" variant="secondary" onPress={handleLeave} />
     </ScrollView>
   );
 }

@@ -27,6 +27,16 @@ Cross-platform (Android + iOS) built with **React Native + Expo**, **MapLibre**
   a coin-priced hint shop (zone, line type, first letter, distance from any
   station). Seekers win by reaching the hider's locked station; the hider
   wins if the timer expires.
+- **Train Rush multiplayer** — two teams (red & blue) race from station A to
+  station B. Auto-balanced team assignment with manual swap. Spend coins to
+  throw timer-based curses at the opposing team (Slow Local, No CSMT,
+  Mandatory Detour, etc.) — recipients see active curses in their HUD.
+- **Play again** flow with role rotation across all three modes — Tag keeps
+  the current runner, Hide & Seek promotes the finder to next hider, Train
+  Rush flips the from/to direction.
+- **Hardened Firestore rules** — askers can only write their own questions,
+  only the current hider can answer them, hint and curse-throw writes are
+  scoped to in-room players.
 
 ## Project layout
 

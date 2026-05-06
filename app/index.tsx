@@ -77,6 +77,19 @@ export default function Home() {
             onPress={() => router.push('/hideseek')}
           />
         </View>
+
+        <View style={styles.modeCard}>
+          <Text style={styles.modeTitle}>Train Rush (Multiplayer)</Text>
+          <Text style={styles.modeDesc}>
+            Two teams race across MMR from station A to station B. Spend coins to throw curses at
+            the opposing side. First team to reach the destination wins.
+          </Text>
+          <Button
+            title="Open Train Rush"
+            variant="secondary"
+            onPress={() => router.push('/race')}
+          />
+        </View>
       </View>
 
       <View style={styles.section}>

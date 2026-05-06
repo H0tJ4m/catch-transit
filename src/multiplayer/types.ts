@@ -1,8 +1,9 @@
 import type { Zone } from '@/transit/types';
 
 export type RoomState = 'lobby' | 'countdown' | 'running' | 'ended';
-export type RoomMode = 'tag' | 'hide-seek';
-export type PlayerRole = 'runner' | 'chaser' | 'hider' | 'seeker';
+export type RoomMode = 'tag' | 'hide-seek' | 'race';
+export type PlayerRole = 'runner' | 'chaser' | 'hider' | 'seeker' | 'racer';
+export type Team = 'red' | 'blue';
 
 export type PlayerFix = {
   lat: number;
@@ -21,6 +22,7 @@ export type Player = {
   joinedAt: number;
   lastFix: PlayerFix | null;
   lastStationId: string | null;
+  team?: Team | null;
 };
 
 export type TagConfig = {
@@ -72,7 +74,35 @@ export type HideSeekRoom = BaseRoom & {
   hiderUid: string | null;
 };
 
-export type Room = TagRoom | HideSeekRoom;
+export type RaceConfig = {
+  fromStationId: string | null;
+  toStationId: string | null;
+  durationMin: number;
+  /** How close (m) a racer must come to the destination to finish. */
+  finishRadiusM: number;
+  startingCoins: number;
+};
+
+export type RaceRoom = BaseRoom & {
+  mode: 'race';
+  config: RaceConfig;
+};
+
+export type Room = TagRoom | HideSeekRoom | RaceRoom;
+
+export type CurseThrow = {
+  id: string;
+  fromUid: string;
+  fromName: string;
+  targetTeam: Team;
+  cardId: string;
+  cardTitle: string;
+  cardDescription: string;
+  cost: number;
+  thrownAt: number;
+  /** Wall-clock ms when the curse expires (0 = no timer). */
+  expiresAt: number;
+};
 
 export type Question = {
   id: string;
@@ -113,7 +143,21 @@ export type RoomEvent =
   | { type: 'role-change'; uid: string; role: PlayerRole; at: number }
   | { type: 'cheat-flag'; uid: string; reason: string; at: number }
   | { type: 'hider-locked'; uid: string; stationId: string; at: number }
-  | { type: 'hider-found'; finderUid: string; stationId: string; at: number };
+  | { type: 'hider-found'; finderUid: string; stationId: string; at: number }
+  | {
+      type: 'race-finish';
+      uid: string;
+      team: Team;
+      stationId: string;
+      at: number;
+    }
+  | {
+      type: 'curse-throw';
+      fromUid: string;
+      targetTeam: Team;
+      cardId: string;
+      at: number;
+    };
 
 export const DEFAULT_TAG_CONFIG: TagConfig = {
   headStartSec: 5 * 60,
@@ -128,4 +172,12 @@ export const DEFAULT_HIDE_SEEK_CONFIG: HideSeekConfig = {
   startingCoins: 50,
   hiderStationId: null,
   hiderLocked: false,
+};
+
+export const DEFAULT_RACE_CONFIG: RaceConfig = {
+  fromStationId: null,
+  toStationId: null,
+  durationMin: 60,
+  finishRadiusM: 150,
+  startingCoins: 50,
 };
