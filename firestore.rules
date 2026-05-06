@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Minimal rules for the Tag MVP. Anyone signed in (anonymous auth is fine)
+// can create a room. Within a room, anyone signed in can read; writes to a
+// player document are restricted to that player's own uid; the room document
+// itself can only be mutated by the host. Events can be appended by any
+// signed-in user inside the room.
+//
+// These rules are intentionally permissive enough for friend-lobby play.
+// Tighten before opening to public matchmaking.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /rooms/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.hostUid == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.hostUid == request.auth.uid;
+
+      match /players/{uid} {
+        allow read: if request.auth != null;
+        allow create, update: if request.auth != null && request.auth.uid == uid;
+        allow delete: if false;
+      }
+
+      match /events/{event} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null;
+        allow update, delete: if false;
+      }
+    }
+  }
+}

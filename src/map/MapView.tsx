@@ -9,12 +9,22 @@ import { mumbaiDarkStyle, MUMBAI_CENTER, MUMBAI_DEFAULT_ZOOM } from './styles/mu
 
 MapLibreGL.setAccessToken(null);
 
+export type PlayerMarker = {
+  uid: string;
+  name: string;
+  lat: number;
+  lng: number;
+  role: 'runner' | 'chaser';
+  isMe: boolean;
+};
+
 type Props = {
   userLocation?: { lat: number; lng: number } | null;
   highlightedStationId?: string | null;
   onStationPress?: (stationId: string) => void;
   cameraRef?: React.RefObject<CameraRef | null>;
   mapRef?: React.RefObject<MapViewRef | null>;
+  playerMarkers?: PlayerMarker[];
 };
 
 export function TransitMap({
@@ -23,6 +33,7 @@ export function TransitMap({
   onStationPress,
   cameraRef,
   mapRef,
+  playerMarkers,
 }: Props) {
   const linesData = useMemo(() => buildLinesGeoJSON(), []);
   const stationsData = useMemo(() => buildStationsGeoJSON(), []);
@@ -107,6 +118,56 @@ export function TransitMap({
 
         {highlightedStationId ? (
           <HighlightLayer stationId={highlightedStationId} />
+        ) : null}
+
+        {playerMarkers && playerMarkers.length > 0 ? (
+          <MapLibreGL.ShapeSource
+            id="players"
+            shape={{
+              type: 'FeatureCollection',
+              features: playerMarkers.map((p) => ({
+                type: 'Feature',
+                properties: {
+                  uid: p.uid,
+                  name: p.name,
+                  role: p.role,
+                  isMe: p.isMe,
+                  color: p.role === 'runner' ? '#facc15' : '#f87171',
+                },
+                geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+              })),
+            }}
+          >
+            <MapLibreGL.CircleLayer
+              id="players-halo"
+              style={{
+                circleRadius: ['case', ['get', 'isMe'], 18, 12],
+                circleColor: ['get', 'color'],
+                circleOpacity: 0.25,
+              }}
+            />
+            <MapLibreGL.CircleLayer
+              id="players-dot"
+              style={{
+                circleRadius: ['case', ['get', 'isMe'], 9, 7],
+                circleColor: ['get', 'color'],
+                circleStrokeColor: '#fff',
+                circleStrokeWidth: 2,
+              }}
+            />
+            <MapLibreGL.SymbolLayer
+              id="players-label"
+              style={{
+                textField: ['get', 'name'],
+                textSize: 11,
+                textColor: '#f8fafc',
+                textHaloColor: '#0b1220',
+                textHaloWidth: 1.5,
+                textOffset: [0, 1.4],
+                textAnchor: 'top',
+              }}
+            />
+          </MapLibreGL.ShapeSource>
         ) : null}
 
         {userLocation ? (

@@ -51,12 +51,17 @@ export default function Home() {
           />
         </View>
 
-        <View style={[styles.modeCard, styles.lockedCard]}>
-          <Text style={styles.modeTitle}>Tag (Multiplayer) — soon</Text>
+        <View style={styles.modeCard}>
+          <Text style={styles.modeTitle}>Tag (Multiplayer)</Text>
           <Text style={styles.modeDesc}>
-            One runner, several chasers. Real-time location sync via room codes. Coming in the
-            next phase.
+            One runner, several chasers. Real-time location sync via 4-letter room codes. Roles
+            rotate after every capture.
           </Text>
+          <Button
+            title="Open Tag"
+            variant="secondary"
+            onPress={() => router.push('/tag')}
+          />
         </View>
       </View>
 
@@ -107,7 +112,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  lockedCard: { opacity: 0.6 },
   modeTitle: { color: colors.text, fontSize: 18, fontWeight: '700' },
   modeDesc: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
   link: { color: colors.accent, fontSize: 15, paddingVertical: spacing.sm },

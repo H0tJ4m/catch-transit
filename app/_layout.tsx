@@ -27,6 +27,16 @@ export default function RootLayout() {
             options={{ title: 'Session Summary', headerBackVisible: false }}
           />
           <Stack.Screen name="station/[id]" options={{ title: 'Station' }} />
+          <Stack.Screen name="tag/index" options={{ title: 'Tag' }} />
+          <Stack.Screen name="tag/[code]" options={{ title: 'Lobby' }} />
+          <Stack.Screen
+            name="tag/play/[code]"
+            options={{ title: 'Tag', headerBackTitle: 'Quit' }}
+          />
+          <Stack.Screen
+            name="tag/summary/[code]"
+            options={{ title: 'Round summary', headerBackVisible: false }}
+          />
           <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         </Stack>
       </SafeAreaProvider>
