@@ -1,22 +1,34 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Button } from '@/ui/Button';
 import { colors, radius, spacing } from '@/ui/theme';
 import { useFirebaseUser } from '@/firebase/auth';
 import { isFirebaseConfigured } from '@/firebase/config';
 import { createRoom, joinRoom } from '@/firebase/rooms';
 import { useRoomStore } from '@/multiplayer/store';
+import type { HideSeekZone } from '@/multiplayer/types';
 
-export default function TagLobby() {
+const ZONE_OPTIONS: { id: HideSeekZone; label: string }[] = [
+  { id: 'all-mmr', label: 'All MMR' },
+  { id: 'south-mumbai', label: 'South Mumbai' },
+  { id: 'central-mumbai', label: 'Central Mumbai' },
+  { id: 'western-suburbs', label: 'Western Suburbs' },
+  { id: 'eastern-suburbs', label: 'Eastern Suburbs' },
+  { id: 'thane', label: 'Thane' },
+  { id: 'navi-mumbai', label: 'Navi Mumbai' },
+];
+
+export default function HideSeekHome() {
   const router = useRouter();
-  const { user, loading, error } = useFirebaseUser();
+  const { user, loading } = useFirebaseUser();
   const setIdentity = useRoomStore((s) => s.setIdentity);
   const setRoomCode = useRoomStore((s) => s.setRoomCode);
   const displayName = useRoomStore((s) => s.displayName);
 
   const [name, setName] = useState(displayName);
   const [code, setCode] = useState('');
+  const [zone, setZone] = useState<HideSeekZone>('all-mmr');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -27,13 +39,12 @@ export default function TagLobby() {
   if (!isFirebaseConfigured) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.heading}>Tag — Multiplayer</Text>
+        <Text style={styles.heading}>Hide & Seek</Text>
         <View style={styles.warning}>
           <Text style={styles.warningTitle}>Firebase not configured</Text>
           <Text style={styles.warningBody}>
             Copy <Text style={styles.code}>.env.example</Text> to{' '}
-            <Text style={styles.code}>.env</Text> and paste your Firebase web config from
-            console.firebase.google.com. Anonymous auth + Firestore must be enabled.
+            <Text style={styles.code}>.env</Text> and paste your Firebase web config.
           </Text>
         </View>
       </ScrollView>
@@ -45,9 +56,12 @@ export default function TagLobby() {
     setBusy(true);
     setErr(null);
     try {
-      const newCode = await createRoom(user.uid, name || 'Player', { mode: 'tag' });
+      const newCode = await createRoom(user.uid, name || 'Player', {
+        mode: 'hide-seek',
+        zone,
+      });
       setRoomCode(newCode);
-      router.push(`/tag/${newCode}`);
+      router.push(`/hideseek/${newCode}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Failed to create room');
     } finally {
@@ -63,7 +77,7 @@ export default function TagLobby() {
       const upper = code.toUpperCase();
       await joinRoom(upper, user.uid, name || 'Player');
       setRoomCode(upper);
-      router.push(`/tag/${upper}`);
+      router.push(`/hideseek/${upper}`);
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Failed to join');
     } finally {
@@ -73,10 +87,10 @@ export default function TagLobby() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Tag — Multiplayer</Text>
+      <Text style={styles.heading}>Hide & Seek</Text>
       <Text style={styles.body}>
-        One runner gets a head start. Chasers tag by reaching the runner at the same station.
-        Roles rotate after every capture.
+        One hider picks a station inside the zone and locks in. Seekers ask Yes/No questions and
+        spend coins on hints to narrow it down. Reach the hider's station to win.
       </Text>
 
       <View style={styles.section}>
@@ -92,8 +106,30 @@ export default function TagLobby() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Create a new room</Text>
-        <Button title="Create room" onPress={handleCreate} disabled={!user || busy || loading} />
+        <Text style={styles.sectionLabel}>Hiding zone</Text>
+        <View style={styles.zoneGrid}>
+          {ZONE_OPTIONS.map((z) => (
+            <Pressable
+              key={z.id}
+              onPress={() => setZone(z.id)}
+              style={[styles.zoneChip, zone === z.id ? styles.zoneChipOn : null]}
+            >
+              <Text
+                style={[styles.zoneChipText, zone === z.id ? styles.zoneChipTextOn : null]}
+              >
+                {z.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.section}>
+        <Button
+          title="Create room"
+          onPress={handleCreate}
+          disabled={!user || busy || loading}
+        />
       </View>
 
       <View style={styles.divider} />
@@ -117,7 +153,6 @@ export default function TagLobby() {
         />
       </View>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
       {err ? <Text style={styles.error}>{err}</Text> : null}
     </ScrollView>
   );
@@ -138,13 +173,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  codeInput: {
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: 8,
-    textAlign: 'center',
-  },
+  codeInput: { fontSize: 28, fontWeight: '800', letterSpacing: 8, textAlign: 'center' },
   divider: { height: 1, backgroundColor: colors.border },
+  zoneGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  zoneChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.bgElevated,
+  },
+  zoneChipOn: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  zoneChipText: { color: colors.text, fontSize: 13 },
+  zoneChipTextOn: { color: '#fff', fontWeight: '700' },
   warning: {
     backgroundColor: colors.bgElevated,
     padding: spacing.md,

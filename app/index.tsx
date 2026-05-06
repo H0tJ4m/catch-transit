@@ -63,6 +63,20 @@ export default function Home() {
             onPress={() => router.push('/tag')}
           />
         </View>
+
+        <View style={styles.modeCard}>
+          <Text style={styles.modeTitle}>Hide & Seek (Multiplayer)</Text>
+          <Text style={styles.modeDesc}>
+            Hider picks a station inside the chosen MMR zone and locks in. Seekers ask Yes/No
+            questions and spend coins on hints to narrow it down. Reach the hider's station to
+            win.
+          </Text>
+          <Button
+            title="Open Hide & Seek"
+            variant="secondary"
+            onPress={() => router.push('/hideseek')}
+          />
+        </View>
       </View>
 
       <View style={styles.section}>

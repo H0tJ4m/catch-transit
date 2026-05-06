@@ -34,18 +34,19 @@ export function useTagLoop(): void {
 
   useEffect(() => {
     if (!code || !room || !isHost) return;
+    if (room.mode !== 'tag') return;
     if (currentPhase(room) !== 'running') return;
+    const tagRoom = room;
 
     const interval = setInterval(async () => {
-      // Time-up check.
-      if (timeRemainingSec(room) <= 0 && room.state !== 'ended') {
+      if (timeRemainingSec(tagRoom) <= 0 && tagRoom.state !== 'ended') {
         await setRoomState(code, 'ended');
         return;
       }
       if (!runner) return;
       for (const chaser of players) {
         if (chaser.uid === runner.uid) continue;
-        if (!detectCapture(runner, chaser, room.config.captureRadiusM)) continue;
+        if (!detectCapture(runner, chaser, tagRoom.config.captureRadiusM)) continue;
         await onCapture(code, runner, chaser);
         break;
       }

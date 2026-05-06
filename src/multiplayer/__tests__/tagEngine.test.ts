@@ -16,6 +16,7 @@ const baseRoom: Room = {
   config: { headStartSec: 60, captureRadiusM: 100, durationMin: 5 },
   startedAt: Date.now(),
   endedAt: null,
+  winner: null,
   runnerUid: 'runner',
 };
 
@@ -25,6 +26,7 @@ const playerAtDadar = (uid: string, dx = 0, dy = 0): Player => ({
   role: 'runner',
   online: true,
   score: 0,
+  coins: 0,
   joinedAt: 0,
   lastFix: { lat: 19.0186 + dy, lng: 72.8425 + dx, speedMps: 0, t: Date.now() },
   lastStationId: 'wr-dadar',

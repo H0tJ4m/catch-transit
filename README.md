@@ -19,8 +19,14 @@ Cross-platform (Android + iOS) built with **React Native + Expo**, **MapLibre**
 - Session summary with full card history.
 - **Tag multiplayer** with 4-letter room codes, real-time location sync via
   Firebase, head-start countdown, capture detection at the same station, role
-  rotation after each capture, anti-cheat speed/jump heuristics, and local
-  notifications for capture events.
+  rotation after each capture, anti-cheat speed/jump heuristics (live-logged
+  to Firestore as `cheat-flag` events), and local notifications for capture
+  events.
+- **Hide & Seek multiplayer** with zone-restricted hiding stations, hider
+  station picker + lock-in, Yes/No question chat answered by the hider, and
+  a coin-priced hint shop (zone, line type, first letter, distance from any
+  station). Seekers win by reaching the hider's locked station; the hider
+  wins if the timer expires.
 
 ## Project layout
 
