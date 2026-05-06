@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Catch Transit",
+    "slug": "catch-transit",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "catchtransit",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.catchtransit.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Catch Transit needs your location to detect when you arrive at Mumbai stations and trigger in-game challenges.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Catch Transit tracks your location during a game session — even in the background — so it can detect station arrivals while your phone is in your pocket on the train.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "package": "com.catchtransit.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#0b1220"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Catch Transit uses your location to detect train station arrivals during a game session.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

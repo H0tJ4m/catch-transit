@@ -1,0 +1,96 @@
+[
+  {
+    "id": "wr",
+    "name": "Western Line",
+    "shortName": "WR",
+    "color": "#F2C200",
+    "type": "suburban",
+    "stations": [
+      "wr-churchgate", "wr-marine-lines", "wr-charni-road", "wr-grant-road",
+      "wr-mumbai-central", "wr-mahalaxmi", "wr-lower-parel", "wr-prabhadevi",
+      "wr-dadar", "wr-matunga-road", "wr-mahim", "wr-bandra", "wr-khar-road",
+      "wr-santacruz", "wr-vile-parle", "wr-andheri", "wr-jogeshwari",
+      "wr-goregaon", "wr-malad", "wr-kandivali", "wr-borivali", "wr-dahisar",
+      "wr-mira-road", "wr-bhayandar", "wr-naigaon", "wr-vasai-road",
+      "wr-nallasopara", "wr-virar"
+    ]
+  },
+  {
+    "id": "cr-main",
+    "name": "Central Line (Main)",
+    "shortName": "CR",
+    "color": "#E63946",
+    "type": "suburban",
+    "stations": [
+      "cr-csmt", "cr-masjid", "cr-sandhurst-road", "cr-byculla",
+      "cr-currey-road", "cr-parel", "wr-dadar", "cr-matunga", "cr-sion",
+      "cr-kurla", "cr-ghatkopar", "cr-vikhroli", "cr-bhandup", "cr-mulund",
+      "cr-thane", "cr-dombivli", "cr-kalyan"
+    ]
+  },
+  {
+    "id": "harbour",
+    "name": "Harbour Line",
+    "shortName": "HR",
+    "color": "#1D4ED8",
+    "type": "suburban",
+    "stations": [
+      "cr-csmt", "cr-masjid", "cr-sandhurst-road", "h-vadala-road", "wr-mahim",
+      "wr-bandra", "cr-kurla", "h-chembur", "h-mankhurd", "h-vashi", "h-nerul",
+      "h-belapur", "h-panvel"
+    ]
+  },
+  {
+    "id": "trans-harbour",
+    "name": "Trans-Harbour Line",
+    "shortName": "TH",
+    "color": "#0EA5E9",
+    "type": "suburban",
+    "stations": [
+      "cr-thane", "th-airoli", "th-ghansoli", "th-turbhe", "h-nerul", "h-vashi"
+    ]
+  },
+  {
+    "id": "metro-1",
+    "name": "Metro Line 1 (Blue)",
+    "shortName": "M1",
+    "color": "#2563EB",
+    "type": "metro",
+    "stations": [
+      "m1-versova", "m1-d-n-nagar", "wr-andheri", "m1-marol-naka",
+      "m1-saki-naka", "m1-asalpha", "cr-ghatkopar"
+    ]
+  },
+  {
+    "id": "metro-2a",
+    "name": "Metro Line 2A (Yellow)",
+    "shortName": "M2A",
+    "color": "#FBBF24",
+    "type": "metro",
+    "stations": [
+      "wr-dahisar", "wr-borivali", "wr-kandivali", "m1-d-n-nagar"
+    ]
+  },
+  {
+    "id": "metro-3",
+    "name": "Metro Line 3 (Aqua)",
+    "shortName": "M3",
+    "color": "#06B6D4",
+    "type": "metro",
+    "stations": [
+      "m3-cuffe-parade", "m3-csmt-metro", "wr-grant-road", "wr-mumbai-central",
+      "wr-mahalaxmi", "m3-worli", "wr-dadar", "m3-bkc", "wr-santacruz",
+      "m1-marol-naka", "m3-seepz"
+    ]
+  },
+  {
+    "id": "metro-7",
+    "name": "Metro Line 7 (Red)",
+    "shortName": "M7",
+    "color": "#DC2626",
+    "type": "metro",
+    "stations": [
+      "wr-dahisar", "wr-goregaon", "wr-andheri"
+    ]
+  }
+]
