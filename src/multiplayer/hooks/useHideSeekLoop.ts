@@ -3,6 +3,7 @@ import { logEvent, setRoomState, setRoomWinner } from '@/firebase/rooms';
 import { currentPhase, detectHiderFound, timeRemainingSec } from '../hideSeek';
 import { selectHider, selectMe, selectSeekers, useRoomStore } from '../store';
 import { notify } from '../notifications';
+import { electLeader } from '../leader';
 
 /**
  * Drives the host-authoritative checks for a Hide & Seek round: detect when a
@@ -15,12 +16,13 @@ export function useHideSeekLoop(): void {
   const me = useRoomStore(selectMe);
   const hider = useRoomStore(selectHider);
   const seekers = useRoomStore(selectSeekers);
+  const players = useRoomStore((s) => s.players);
   const events = useRoomStore((s) => s.events);
   const lastEventCount = useRef(0);
-  const isHost = me?.uid && room?.hostUid === me.uid;
+  const isLeader = me?.uid && electLeader(players) === me.uid;
 
   useEffect(() => {
-    if (!code || !room || !isHost) return;
+    if (!code || !room || !isLeader) return;
     if (room.mode !== 'hide-seek') return;
     if (currentPhase(room) !== 'seeking') return;
 
@@ -47,7 +49,7 @@ export function useHideSeekLoop(): void {
     }, 2_000);
 
     return () => clearInterval(interval);
-  }, [code, room, hider, seekers, isHost]);
+  }, [code, room, hider, seekers, isLeader]);
 
   useEffect(() => {
     if (events.length <= lastEventCount.current) {

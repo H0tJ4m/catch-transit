@@ -1,22 +1,36 @@
+import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
+import { isFirebaseConfigured } from '@/firebase/config';
+import { savePushToken } from '@/firebase/users';
 
 let configured = false;
 
-export async function configureNotifications(): Promise<void> {
+export async function configureNotifications(uid?: string | null): Promise<void> {
   if (configured) return;
   configured = true;
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldPlaySound: true,
       shouldSetBadge: false,
+      shouldShowAlert: true,
       shouldShowBanner: true,
       shouldShowList: true,
     }),
   });
   try {
-    await Notifications.requestPermissionsAsync();
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted' || !uid || !isFirebaseConfigured) return;
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+    const token = (
+      await Notifications.getExpoPushTokenAsync(
+        projectId ? { projectId } : undefined,
+      )
+    ).data;
+    if (token) await savePushToken(uid, token);
   } catch {
-    // Notifications are best-effort; ignore failure.
+    // Push tokens are best-effort. Local notifications still work without them.
   }
 }
 

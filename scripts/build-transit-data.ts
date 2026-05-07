@@ -15,7 +15,11 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+const OVERPASS_MIRRORS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://lz4.overpass-api.de/api/interpreter',
+];
 
 // MMR bounding box (south, west, north, east)
 const MMR_BBOX = [18.85, 72.75, 19.55, 73.20] as const;
@@ -41,13 +45,28 @@ type OsmElement = {
 };
 
 async function fetchOverpass(): Promise<OsmElement[]> {
-  const res = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    body: `data=${encodeURIComponent(QUERY)}`,
-  });
-  if (!res.ok) throw new Error(`Overpass ${res.status}`);
-  const json = (await res.json()) as { elements: OsmElement[] };
-  return json.elements;
+  const errors: string[] = [];
+  for (const url of OVERPASS_MIRRORS) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'catch-transit/0.1 (https://github.com/H0tJ4m/catch-transit)',
+        },
+        body: `data=${encodeURIComponent(QUERY)}`,
+      });
+      if (!res.ok) {
+        errors.push(`${url}: ${res.status}`);
+        continue;
+      }
+      const json = (await res.json()) as { elements: OsmElement[] };
+      return json.elements;
+    } catch (e) {
+      errors.push(`${url}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  throw new Error(`All Overpass mirrors failed: ${errors.join(' | ')}`);
 }
 
 function writeJson(relPath: string, data: unknown): void {

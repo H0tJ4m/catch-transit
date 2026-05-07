@@ -3,6 +3,7 @@ import { logEvent, setRoomState, setRoomWinner } from '@/firebase/rooms';
 import { selectMe, useRoomStore } from '../store';
 import { currentPhase, detectFinish, timeRemainingSec } from '../race';
 import { notify } from '../notifications';
+import { electLeader } from '../leader';
 
 export function useRaceLoop(): void {
   const code = useRoomStore((s) => s.code);
@@ -11,10 +12,10 @@ export function useRaceLoop(): void {
   const players = useRoomStore((s) => s.players);
   const events = useRoomStore((s) => s.events);
   const lastEventCount = useRef(0);
-  const isHost = me?.uid && room?.hostUid === me.uid;
+  const isLeader = me?.uid && electLeader(players) === me.uid;
 
   useEffect(() => {
-    if (!code || !room || !isHost) return;
+    if (!code || !room || !isLeader) return;
     if (room.mode !== 'race') return;
     if (currentPhase(room) !== 'running') return;
     const raceRoom = room;
@@ -42,7 +43,7 @@ export function useRaceLoop(): void {
     }, 2_000);
 
     return () => clearInterval(interval);
-  }, [code, room, players, isHost]);
+  }, [code, room, players, isLeader]);
 
   useEffect(() => {
     if (events.length <= lastEventCount.current) {

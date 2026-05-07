@@ -13,6 +13,7 @@ import {
 } from '../tagEngine';
 import { selectMe, selectRunner, useRoomStore } from '../store';
 import { notify } from '../notifications';
+import { electLeader } from '../leader';
 import type { Player } from '../types';
 
 /**
@@ -30,10 +31,10 @@ export function useTagLoop(): void {
   const events = useRoomStore((s) => s.events);
 
   const lastEventCount = useRef(0);
-  const isHost = me?.uid && room?.hostUid === me.uid;
+  const isLeader = me?.uid && electLeader(players) === me.uid;
 
   useEffect(() => {
-    if (!code || !room || !isHost) return;
+    if (!code || !room || !isLeader) return;
     if (room.mode !== 'tag') return;
     if (currentPhase(room) !== 'running') return;
     const tagRoom = room;
@@ -53,7 +54,7 @@ export function useTagLoop(): void {
     }, 2_000);
 
     return () => clearInterval(interval);
-  }, [code, room, runner, players, isHost]);
+  }, [code, room, runner, players, isLeader]);
 
   useEffect(() => {
     if (events.length <= lastEventCount.current) {

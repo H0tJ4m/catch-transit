@@ -22,8 +22,8 @@ type Props = {
   userLocation?: { lat: number; lng: number } | null;
   highlightedStationId?: string | null;
   onStationPress?: (stationId: string) => void;
-  cameraRef?: React.RefObject<CameraRef | null>;
-  mapRef?: React.RefObject<MapViewRef | null>;
+  cameraRef?: React.Ref<CameraRef>;
+  mapRef?: React.Ref<MapViewRef>;
   playerMarkers?: PlayerMarker[];
 };
 

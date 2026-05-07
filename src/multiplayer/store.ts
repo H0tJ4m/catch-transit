@@ -55,20 +55,24 @@ export const selectMe = (s: State): Player | null =>
 
 export const selectRunner = (s: State): Player | null => {
   if (!s.room || s.room.mode !== 'tag' || !s.room.runnerUid) return null;
-  return s.players.find((p) => p.uid === s.room?.runnerUid) ?? null;
+  const runnerUid = s.room.runnerUid;
+  return s.players.find((p) => p.uid === runnerUid) ?? null;
 };
 
 export const selectChasers = (s: State): Player[] => {
   if (!s.room || s.room.mode !== 'tag') return s.players;
-  return s.players.filter((p) => p.uid !== s.room?.runnerUid);
+  const runnerUid = s.room.runnerUid;
+  return s.players.filter((p) => p.uid !== runnerUid);
 };
 
 export const selectHider = (s: State): Player | null => {
   if (!s.room || s.room.mode !== 'hide-seek' || !s.room.hiderUid) return null;
-  return s.players.find((p) => p.uid === s.room?.hiderUid) ?? null;
+  const hiderUid = s.room.hiderUid;
+  return s.players.find((p) => p.uid === hiderUid) ?? null;
 };
 
 export const selectSeekers = (s: State): Player[] => {
   if (!s.room || s.room.mode !== 'hide-seek') return s.players;
-  return s.players.filter((p) => p.uid !== s.room?.hiderUid);
+  const hiderUid = s.room.hiderUid;
+  return s.players.filter((p) => p.uid !== hiderUid);
 };

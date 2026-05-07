@@ -50,11 +50,12 @@ export default function TagPlay() {
   const phase = currentPhase(room ?? null);
 
   const markers: PlayerMarker[] = useMemo(() => {
-    if (!room) return [];
+    if (!room || room.mode !== 'tag') return [];
+    const tagRoom = room;
     return players
       .filter((p) => p.lastFix)
       .map((p) => {
-        const isRunner = p.uid === room.runnerUid;
+        const isRunner = p.uid === tagRoom.runnerUid;
         const isMe = p.uid === me?.uid;
         const hideRunner = phase === 'head-start' && !isRunner && !isMe;
         if (hideRunner && isRunner) return null;

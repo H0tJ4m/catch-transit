@@ -92,7 +92,7 @@ export default function RoomLobby() {
         )}
       </View>
 
-      {room ? (
+      {room?.mode === 'tag' ? (
         <View style={styles.list}>
           <Text style={styles.muted}>
             Head start: {Math.round(room.config.headStartSec / 60)} min · Capture radius:{' '}

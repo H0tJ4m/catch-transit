@@ -23,9 +23,11 @@
     "type": "suburban",
     "stations": [
       "cr-csmt", "cr-masjid", "cr-sandhurst-road", "cr-byculla",
-      "cr-currey-road", "cr-parel", "wr-dadar", "cr-matunga", "cr-sion",
-      "cr-kurla", "cr-ghatkopar", "cr-vikhroli", "cr-bhandup", "cr-mulund",
-      "cr-thane", "cr-dombivli", "cr-kalyan"
+      "cr-chinchpokli", "cr-currey-road", "cr-parel", "wr-dadar",
+      "cr-matunga", "cr-sion", "cr-kurla", "cr-vidyavihar", "cr-ghatkopar",
+      "cr-vikhroli", "cr-kanjurmarg", "cr-bhandup", "cr-nahur", "cr-mulund",
+      "cr-thane", "cr-kalwa", "cr-mumbra", "cr-diva", "cr-kopar",
+      "cr-thakurli", "cr-dombivli", "cr-kalyan"
     ]
   },
   {
@@ -35,9 +37,12 @@
     "color": "#1D4ED8",
     "type": "suburban",
     "stations": [
-      "cr-csmt", "cr-masjid", "cr-sandhurst-road", "h-vadala-road", "wr-mahim",
-      "wr-bandra", "cr-kurla", "h-chembur", "h-mankhurd", "h-vashi", "h-nerul",
-      "h-belapur", "h-panvel"
+      "cr-csmt", "cr-masjid", "cr-sandhurst-road", "h-dockyard-road",
+      "h-reay-road", "h-cotton-green", "h-sewri", "h-vadala-road",
+      "h-gtb-nagar", "h-chunabhatti", "h-tilak-nagar", "cr-kurla",
+      "h-chembur", "h-govandi", "h-mankhurd", "h-vashi", "h-sanpada",
+      "h-juinagar", "h-nerul", "h-seawoods", "h-belapur", "h-kharghar",
+      "h-mansarovar", "h-khandeshwar", "h-panvel"
     ]
   },
   {
@@ -47,7 +52,8 @@
     "color": "#0EA5E9",
     "type": "suburban",
     "stations": [
-      "cr-thane", "th-airoli", "th-ghansoli", "th-turbhe", "h-nerul", "h-vashi"
+      "cr-thane", "th-airoli", "th-rabale", "th-ghansoli", "th-kopar-khairane",
+      "th-turbhe", "h-sanpada", "h-vashi", "h-nerul"
     ]
   },
   {
@@ -57,8 +63,9 @@
     "color": "#2563EB",
     "type": "metro",
     "stations": [
-      "m1-versova", "m1-d-n-nagar", "wr-andheri", "m1-marol-naka",
-      "m1-saki-naka", "m1-asalpha", "cr-ghatkopar"
+      "m1-versova", "m1-d-n-nagar", "m1-azad-nagar", "wr-andheri",
+      "m1-weh", "m1-chakala", "m1-airport-road", "m1-marol-naka",
+      "m1-saki-naka", "m1-asalpha", "m1-jagruti-nagar", "cr-ghatkopar"
     ]
   },
   {

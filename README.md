@@ -37,6 +37,12 @@ Cross-platform (Android + iOS) built with **React Native + Expo**, **MapLibre**
 - **Hardened Firestore rules** — askers can only write their own questions,
   only the current hider can answer them, hint and curse-throw writes are
   scoped to in-room players.
+- **Resilient host loop** — capture detection / round-end is run by a
+  deterministic leader-elected client (lowest online uid), so the round
+  survives the original host disconnecting mid-game.
+- **Optional Cloud Functions** in `functions/` for cross-device Expo Push
+  notifications and a watchdog that ends rooms whose timer expired even if
+  every client is offline.
 
 ## Project layout
 
@@ -79,6 +85,24 @@ for an installable APK / TestFlight build.
    `.env` file (see `.env.example`).
 5. Restart `pnpm start`. The Tag screen will show a setup banner if any of the
    `EXPO_PUBLIC_FIREBASE_*` vars are missing.
+
+### Cloud Functions (optional)
+
+Cross-device push notifications and the round watchdog live in `functions/`.
+They are entirely optional — the app works without them, with local-only
+notifications and client-side leader election as the round backstop.
+
+```bash
+cd functions
+npm install
+npm run build
+firebase deploy --only functions
+```
+
+Requires a Firebase project on the Blaze plan (Cloud Functions need
+outbound network access). Push notifications use the Expo Push Service
+via the device tokens registered into `users/{uid}/pushToken` by
+`configureNotifications` on the client.
 
 ## Status
 

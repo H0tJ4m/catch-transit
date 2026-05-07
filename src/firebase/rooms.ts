@@ -162,7 +162,7 @@ export async function leaveRoom(code: string, uid: string): Promise<void> {
 }
 
 export async function setRoomState(code: string, state: RoomState): Promise<void> {
-  const patch: Record<string, unknown> = { state };
+  const patch: { state: RoomState; startedAt?: number; endedAt?: number } = { state };
   if (state === 'running') patch.startedAt = Date.now();
   if (state === 'ended') patch.endedAt = Date.now();
   await updateDoc(roomDoc(code), patch);
@@ -193,7 +193,14 @@ export async function resetRound(code: string): Promise<void> {
   const snap = await getDoc(roomDoc(code));
   if (!snap.exists()) return;
   const data = snap.data() as Room;
-  const patch: Record<string, unknown> = {
+  const patch: {
+    state: RoomState;
+    startedAt: null;
+    endedAt: null;
+    winner: null;
+    'config.hiderStationId'?: null;
+    'config.hiderLocked'?: false;
+  } = {
     state: 'lobby',
     startedAt: null,
     endedAt: null,
