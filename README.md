@@ -65,15 +65,46 @@ firestore.rules          # security rules for friend-lobby Tag
 
 ```bash
 pnpm install
-pnpm start            # Expo dev server
-pnpm test             # graph + engine unit tests
+pnpm preflight        # gate: assets, env, seed integrity, tsc, jest
+pnpm test             # 33 tests across graph / engine / tag / hide&seek / race / leader
 pnpm typecheck
+pnpm gen:assets       # regenerate placeholder app icon + splash
 pnpm build:transit    # rebuild stations.json / lines.json from OpenStreetMap
+pnpm start            # Expo dev server (web / dev-client)
 ```
 
-For physical-device testing use Expo Go (Android dev menu → mock location works
-for testing geofences without leaving your desk) or `eas build --profile preview`
-for an installable APK / TestFlight build.
+## Putting it on a phone
+
+This app uses MapLibre native modules, so **Expo Go won't work** —
+you need an installable build. The fastest path:
+
+```bash
+# one-time setup
+npm install -g eas-cli
+eas login
+eas init                 # link this project to your Expo account
+
+# Android — produces an installable APK
+pnpm build:android:preview
+
+# iOS — produces an ad-hoc IPA (requires an Apple Developer account)
+pnpm build:ios:preview
+```
+
+EAS emails you a build link; install the APK on your phone or scan the
+QR code in TestFlight to install on iOS. App icon + splash + permission
+prompts are wired up; the in-app **Settings → Diagnostics** panel will tell
+you on first run if anything's missing (location permission, location
+services, Firebase config).
+
+For ongoing development, build the **development** profile once and then
+run `pnpm start` against the resulting dev client:
+
+```bash
+pnpm build:android:dev
+# install the dev-client APK
+pnpm start --dev-client
+```
 
 ### Firebase setup (Tag mode)
 

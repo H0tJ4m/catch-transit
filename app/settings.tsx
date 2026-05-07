@@ -1,16 +1,20 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { colors, radius, spacing } from '@/ui/theme';
 import { lines, stations } from '@/transit/graph';
+import { Diagnostics } from '@/ui/Diagnostics';
 
 export default function Settings() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.heading}>Settings</Text>
 
+      <Diagnostics />
+
       <Section title="About">
         <Text style={styles.body}>
-          Catch Transit is a *Jet Lag*–style game for Mumbai's Local & Metro network. Solo MVP —
-          multiplayer Tag arrives in the next phase.
+          Catch Transit is a *Jet Lag*–style game for Mumbai's Local & Metro network with three
+          multiplayer modes — Tag, Hide & Seek, Train Rush — plus a solo Free Roam / Daily
+          Challenge.
         </Text>
       </Section>
 
