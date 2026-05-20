@@ -1,0 +1,32 @@
+# Files excluded from the tarball uploaded to EAS Build.
+# Anything not needed at native-build time should live here.
+
+# Cloud Functions are deployed separately via `firebase deploy`. Including
+# them confuses pnpm v10 on EAS into treating the repo as a workspace
+# ("packages field missing or empty" build error).
+functions/
+
+# Build / config that EAS regenerates.
+node_modules/
+.expo/
+dist/
+web-build/
+
+# Local secrets — never upload to a build server.
+.env
+.env.local
+
+# CI / docs / scripts that don't run during the native build.
+.github/
+docs/
+*.md
+.eslintrc.js
+jest.config.js
+firestore.rules
+firebase.json
+scripts/build-transit-data.ts
+scripts/preflight.ts
+scripts/gen-assets.ts
+
+# Tests + dev-only tooling.
+**/__tests__/
